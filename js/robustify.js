@@ -80,7 +80,7 @@ Robustify = function(preferences) {
     var settings = (function(preferences) {
         var settings = { 
             "dfltVersiondate": "2014-01-01",
-            "archive"        : "https://web.archive.org/web/{yyyymmddhhmmss}/{url}",
+            "archive"        : "http://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
             "statusservice"  : "http://digitopia.nl/services/statuscode.php?url={url}",
             "precedence"     : "ask"    // "ask" || "live" || "archived" 
         }
