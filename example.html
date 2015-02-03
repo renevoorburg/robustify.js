@@ -14,8 +14,10 @@ dt, .code {font-family: courier; font-size:0.9em}
 <h1><span class="code">robustify.js</span></h1>
 
 
-<p><span class="code">robustify.js</span> (<a href="https://github.com/renevoorburg/robustify.js">https://github.com/renevoorburg/robustify.js</a>) is a javascript that attempts to fight <a href="https://en.wikipedia.org/wiki/Link_rot">link rot</a> or content drift with an implementation of the <a href="http://robustlinks.mementoweb.org/spec/">Memento Robust Links - Link Decoration</a> specification.<br>
+<p><span class="code">robustify.js</span> (<a href="https://github.com/renevoorburg/robustify.js">https://github.com/renevoorburg/robustify.js</a>) is a javascript that attempts to fight <a href="https://en.wikipedia.org/wiki/Link_rot">link rot</a> or content drift with an implementation of Herbert Van de Sompel's <a href="http://robustlinks.mementoweb.org/spec/">Memento Robust Links - Link Decoration</a> specification, which was based in the <a href="http://hiberlink.org">Hiberlink project</a>.<br>
+robustify.js will make any clicked hyperlink test if the linked page is available online. If it is not (returning a "404"), robustify.js will redirect the user to a web archive, by default using the <a href="http://timetravel.mementoweb.org/">Memento Time Travel service</a>.
 </p>
+
 
 <h2>Examples</h2>
 <p>Here are some examples of how <span class="code">robustify.js</span> changes the behaviour of anchor links. <br>
