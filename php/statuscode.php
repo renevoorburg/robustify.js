@@ -36,6 +36,9 @@ function get_headers_curl($url) {
     curl_setopt($ch, CURLOPT_NOBODY,         true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT,        15);
+    
+    // setting a user agent was required for http://tdphotos.skyrock.com/3019645921-Une-installation-portuaire-d-epoque-romaine-a-Pommeroeul.html
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Googlebot/2.1 (+http://www.google.com/bot.html)');
 
     $r = curl_exec($ch);
     $r = split("\n", $r);
@@ -63,13 +66,6 @@ if (isset($_GET["url"])) {
     // initializations:
     define("MAXFOLLOW", 5);
 
-    stream_context_set_default(
-        array(
-            'http' => array(
-                'method' => 'HEAD'
-            )
-        )
-    );
     $results = array();
     $counter = 0;
 
@@ -80,16 +76,19 @@ if (isset($_GET["url"])) {
         $counter++;
         
         $headerArr = get_headers_curl($location);
-        $statuscode = get_statuscode_header($headerArr);
-        $prevLocation = $location;
         $locationHeader = get_location_header($headerArr);
+        $statuscode = get_statuscode_header($headerArr);
         
+        $prevLocation = $location;
         $location = $locationHeader;
+        
+        // check if location is relative and make it absolute:
         if ($locationHeader && !parse_url($locationHeader, PHP_URL_HOST)) {
             $urlComponentsArr = parse_url($prevLocation);
             $location = $urlComponentsArr['scheme'].'://'.$urlComponentsArr['host'].$location;
         }
 
+        // store results:
         if ($location) {
             $results[] = array( 'statuscode' => $statuscode, 'location' => $location );
         } else {
