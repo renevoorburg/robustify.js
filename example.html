@@ -26,13 +26,9 @@ robustify.js will make any clicked hyperlink test if the linked page is availabl
 <p><span class="code"><a href="http://www.dds.nl/~krantb/stellingen/" class="example">&lt;a href=&quot;http://www.dds.nl/~krantb/stellingen/&quot;&gt;http://www.dds.nl/~krantb/stellingen/&lt;/a&gt;</a></span><br>
 Following a redirect, this link leads to a 404, "File not found". Therefore, <span class="code">robustify.js</span> will replace the link with a link that might lead to a version of this page in the default web archive. The preferred archive and preferred date of the archived version can be overridden when calling the script.</p>
 
-<!--
-this one returns a soft 404...
  
-<p><span class="code"><a href="http://www.trouw.nl/tr/nl/4324/Nieuws/article/detail/1233664/2008/05/29/Strijden-tegen-de-bekende-emoties.dhtml" data-versiondate="2012-10-23" class="example">&lt;a href=&quot;http://www.trouw.nl/tr/nl/4324/Nieuws/article/detail/1233664/2008/05/29/Strijden-tegen-de-bekende-emoties.dhtml&quot; data-versiondate=&quot;2012-10-23&quot;&gt;http://www.trouw.nl/tr/nl/4324/Nieuws/article/detail/1233664/2008/05/29/Strijden-tegen-de-bekende-emoties.dhtml&lt;/a&gt;</a></span><br>
+<p><span class="code"><a href="http://www.heimatverein-butzweiler.de/index.php?option=com_content&view=article&id=59&Itemid=79&lang=de" data-versiondate="2009-01-01" class="example">&lt;a href=&quot;http://www.heimatverein-butzweiler.de/index.php?option=com_content&amp;view=article&amp;id=59&amp;Itemid=79&amp;lang=de&quot; data-versiondate=&quot;2009-01-01&quot; class=&quot;example&quot;&gt;http://www.heimatverein-butzweiler.de/index.php?option=com_content&amp;view=article&amp;id=59&amp;Itemid=79&amp;lang=de&lt;/a&gt;</a></span><br>
 In this example the date of the desired archived version has been specified explicitly using the <span class="code">data-versiondate</span> attribute. This date will be used when redirecting the user to the archive. Note that the archive might return a page from a date close to this date.</p>
-
--->
 
 <p><span class="code"><a href="http://www.nu.nl/" data-versionurl="https://web.archive.org/web/20000302032544/http://www.nu.nl/" class="example">&lt;a href=&quot;http://www.nu.nl/&quot; data-versionurl=&quot;https://web.archive.org/web/20000302032544/http://www.nu.nl/&quot;&gt;http://www.nu.nl/&lt;/a&gt;</a></span><br>
 For this page that is available online, a version from a webarchive has been defined using the <span class="code">data-versionurl</span> attribute. The user will now have the choice whether to visit the live of archived version. This behaviour can be overridden, making either the live or the archived version the preferred page.</p>
