@@ -29,19 +29,45 @@
  */
 
 function get_headers_curl($url) {
+
+    // we'll mimic a browser
+    $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+    $header[] = "Cache-Control: max-age=0";
+    $header[] = "Connection: keep-alive";
+    $header[] = "Keep-Alive: 300";
+    $header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+    $header[] = "Accept-Language: en-us,en;q=0.5";
+    $header[] = "Pragma: "; // browsers keep this blank.
+
+    $agent    = 'Googlebot/2.1 (+http://www.google.com/bot.html)';
+    $referer  = 'http://www.google.com';
+    $encoding = 'gzip,deflate';
+
     $ch = curl_init();
 
     curl_setopt($ch, CURLOPT_URL,            $url);
     curl_setopt($ch, CURLOPT_HEADER,         true);
     curl_setopt($ch, CURLOPT_NOBODY,         true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT,        15);
+    curl_setopt($ch, CURLOPT_AUTOREFERER,  true);
+    curl_setopt($ch, CURLOPT_TIMEOUT,        4);
     
+    // mimic a browser
     // setting a user agent was required for http://tdphotos.skyrock.com/3019645921-Une-installation-portuaire-d-epoque-romaine-a-Pommeroeul.html
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Googlebot/2.1 (+http://www.google.com/bot.html)');
+    curl_setopt($ch, CURLOPT_USERAGENT,  $agent);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+    curl_setopt($ch, CURLOPT_REFERER,    $referer);
+    curl_setopt($ch, CURLOPT_ENCODING,   $encoding);
 
+    // do request
     $r = curl_exec($ch);
-    $r = split("\n", $r);
+    $retry = 0;
+    while(curl_errno($ch) == 28 && $retry < 1){
+        $r = curl_exec($ch);
+        $retry++;
+    }
+    
+    $r = explode ("\n", $r);
     return $r;
 } 
 
