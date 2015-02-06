@@ -66,7 +66,7 @@ function get_headers_curl($url) {
         $r = curl_exec($ch);
         $retry++;
     }
-    
+
     $r = explode ("\n", $r);
     return $r;
 } 
@@ -95,7 +95,8 @@ if (isset($_GET["url"])) {
     $results = array();
     $counter = 0;
 
-    $requestUrl = urldecode($_GET["url"]);
+    $requestUrl = $_GET["url"];
+    
     $location = $requestUrl;
     
     while (!empty($location) && ($counter <= MAXFOLLOW)) {
