@@ -7,7 +7,7 @@
 * Should work on any modern browser or IE 8 or better. 
 *  
 * @author René Voorburg <rene@digitopia.nl>
-* @version 1.0
+* @version 1.1
 * @copyright René Voorburg 2015
 * @package robustify.js
 *
@@ -81,7 +81,7 @@ Robustify = function(preferences) {
         var settings = { 
             "dfltVersiondate": "2014-01-01",
             "archive"        : "http://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
-            "statusservice"  : "http://digitopia.nl/services/statuscode.php?url={url}",
+            "statusservice"  : "http://digitopia.nl/services/statuscode.php?soft404detect&url={url}",
             "precedence"     : "ask"    // "ask" || "live" || "archived" 
         }
 
