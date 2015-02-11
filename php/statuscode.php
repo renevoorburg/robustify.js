@@ -232,5 +232,5 @@ if (isset($_GET["url"])) {
     output_JSON($requestUrl, $results);
 
 } else {
-    echo "Error: no url provided. Example usage: http://".$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF']."?url=http%3A%2F%2Fnu.nl%2F ";   
+    echo "Error: no url provided. Example usage: http://".$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF']."?soft404detect&url=http%3A%2F%2Fnu.nl%2F ";
 }
