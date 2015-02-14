@@ -225,7 +225,11 @@ if (isset($_GET["url"])) {
     $requestUrl = $_GET["url"];
     $results = get_header_array($requestUrl);
 
-    if ( isset($_GET["soft404detect"]) && count($results) > 1  && $results[count($results)-1]['statuscode'] == 200 ) {
+    if ( isset($_GET["soft404detect"])                                                  # soft-404 detect is asked for
+          && count($results) > 1                                                        # & there has been at least 1 redirect
+          && $results[count($results)-1]['statuscode'] == 200                           # & a 200 status code has been returned
+          && parse_url($results[count($results)-2]['location'], PHP_URL_PATH) != '/'    # & skip if redirect to home , fix #4
+    ) {
         $results = test_404($results);
     }
 
