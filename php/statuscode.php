@@ -39,7 +39,7 @@
 define("CURLTIMEOUT", 3); // timeout in seconds for curl requests
 define("MAXFOLLOW",   5); // max number of redirects to follow
 define("RANDSTRLEN", 22); // length of string used for forced 404s
-define("SSDEEPSAME", 90); // ssdeep threshold result considered a 404
+define("SSDEEPSAME", 95); // ssdeep threshold result considered a 404
 
 /**
  * Returns a header to be used for mimicking a browser in a request.
