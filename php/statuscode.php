@@ -36,7 +36,7 @@
  *
  */
 
-define("CURLTIMEOUT", 3); // timeout in seconds for curl requests
+define("CURLTIMEOUT", 4); // timeout in seconds for curl requests
 define("MAXFOLLOW",   5); // max number of redirects to follow
 define("RANDSTRLEN", 22); // length of string used for forced 404s
 define("SSDEEPSAME", 95); // ssdeep threshold result considered a 404
@@ -72,7 +72,7 @@ function get_headers_curl($url) {
 
     curl_setopt($ch, CURLOPT_URL,            $url);
     curl_setopt($ch, CURLOPT_HEADER,         true);
-    curl_setopt($ch, CURLOPT_NOBODY,         true);
+    // curl_setopt($ch, CURLOPT_NOBODY,         true); fixes #7, some request are not HEAD-friendly
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_AUTOREFERER,    true);
     curl_setopt($ch, CURLOPT_TIMEOUT,        CURLTIMEOUT);
