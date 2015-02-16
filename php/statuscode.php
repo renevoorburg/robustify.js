@@ -61,7 +61,7 @@ function get_browser_header() {
  * @param $url
  * @return array $r headers returned by request.
  */
-function get_headers_curl($url) {
+function get_headers_curl($url, $nobody = true) {
     // we'll mimic a browser
     $header = get_browser_header();
     $agent    = 'Googlebot/2.1 (+http://www.google.com/bot.html)';
@@ -72,7 +72,7 @@ function get_headers_curl($url) {
 
     curl_setopt($ch, CURLOPT_URL,            $url);
     curl_setopt($ch, CURLOPT_HEADER,         true);
-    // curl_setopt($ch, CURLOPT_NOBODY,         true); fixes #7, some request are not HEAD-friendly
+    curl_setopt($ch, CURLOPT_NOBODY,         $nobody);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_AUTOREFERER,    true);
     curl_setopt($ch, CURLOPT_TIMEOUT,        CURLTIMEOUT);
@@ -154,8 +154,13 @@ function get_header_array($requestUrl) {
         $counter++;
 
         $headerArr = get_headers_curl($location);
-        $locationHeader = get_location_header($headerArr);
         $statuscode = get_statuscode_header($headerArr);
+        if ($statuscode == 403 || $statuscode == 405) {
+            // try again now using a full GET iso HEAD:
+            $headerArr = get_headers_curl($location, false);
+            $statuscode = get_statuscode_header($headerArr);
+        }
+        $locationHeader = get_location_header($headerArr);
 
         $prevLocation = $location;
         $location = $locationHeader;
