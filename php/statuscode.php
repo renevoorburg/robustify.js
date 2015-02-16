@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * statuscode.php
  *
@@ -76,7 +76,7 @@ function get_headers_curl($url, $nobody = true) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_AUTOREFERER,    true);
     curl_setopt($ch, CURLOPT_TIMEOUT,        CURLTIMEOUT);
-    
+
     // mimic a browser, might be required for some sites
     curl_setopt($ch, CURLOPT_USERAGENT,  $agent);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
@@ -134,7 +134,7 @@ function get_location_header($headerArr) {
     foreach ($headerArr as $header) {
         if (0 === strpos($header, 'Location:')) {
             $ret = substr ($header, 10);
-        } 
+        }
     }
     return preg_replace('/\r/', '', $ret);
 }
@@ -206,36 +206,58 @@ function get_random_url($base_url) {
 }
 
 /**
+ * Uses an example url to test if the server for that url is able to return 404 status codes
+ * @param $url example url of server to test
+ * @return bool true is status code 404 is return for a random url
+ */
+function has_404_capability ($url) {
+    $random_url = get_random_url ($url);
+    $header_array = get_header_array ($random_url);
+    return (bool)get_statuscode_header ($header_array) == 404;
+}
+
+/**
+ * Returns true if the given url appears to be the home page.
+ * @param $url
+ * @return bool
+ */
+function is_home_page ($url) {
+    $path = parse_url ($url, PHP_URL_PATH);
+    return $path == '/' || $path == '';
+}
+
+/**
  * Tests if last location of results is likely a soft 404, using a fuzzy hash comparison of
  * its contents with contents of a random request.
  * @param $results
  * @return mixed $results Last statuscode altered if soft 404 detected.
  */
-function test_404($results) {
-    $random_url = get_random_url ($results[count($results)-2]['location']);
+function test_404($results, $url) {
+    $random_url = get_random_url ($url);
     $random_contents = get_contents_curl($random_url);
-    $requested_contents = get_contents_curl($results[count($results)-2]['location']);
+    $requested_contents = get_contents_curl($url);
 
     $similarity = ssdeep_fuzzy_compare(ssdeep_fuzzy_hash($random_contents), ssdeep_fuzzy_hash ($requested_contents));
     if ( $similarity > SSDEEPSAME ) {
-        $results[count($results)-1]['statuscode'] = 404;
-        $results[count($results)-1]['soft404']    = $similarity;
+        $results[count($results) - 1]['statuscode'] = 404;
+        $results[count($results) - 1]['soft404'] = $similarity;
     }
     return $results;
 }
-
 
 if (isset($_GET["url"])) {
 
     $requestUrl = $_GET["url"];
     $results = get_header_array($requestUrl);
 
-    if ( isset($_GET["soft404detect"])                                                  # soft-404 detect is asked for
-          && count($results) > 1                                                        # & there has been at least 1 redirect
-          && $results[count($results)-1]['statuscode'] == 200                           # & a 200 status code has been returned
-          && parse_url($results[count($results)-2]['location'], PHP_URL_PATH) != '/'    # & skip if redirect to home , fix #4
-    ) {
-        $results = test_404($results);
+    if ( isset($_GET["soft404detect"]) && $results[count($results)-1]['statuscode'] == 200) {
+        if ( count($results) > 1  && !is_home_page($results[count($results)-2]['location']) ) {
+            // suspect, we have been redirected (& don't test the home page):
+            $results = test_404($results, $results[count($results)-2]['location']);
+        } elseif (count($results) == 1 && !has_404_capability($requestUrl) && !is_home_page($requestUrl)) {
+            // no suspect redirects, but it doesn't seem to do 404s at all (& don't test the home page):
+            $results = test_404($results, $requestUrl);
+        }
     }
 
     output_JSON($requestUrl, $results);
