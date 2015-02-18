@@ -7,7 +7,7 @@
 * Should work on any modern browser or IE 8 or better. 
 *  
 * @author René Voorburg <rene@digitopia.nl>
-* @version 1.1
+* @version 1.2
 * @copyright René Voorburg 2015
 * @package robustify.js
 *
@@ -200,15 +200,37 @@ Robustify = function(preferences) {
         return false;
     }
 
-    // attach robustLink call to all external links: 
-    var links = document.getElementsByTagName("a"); 
-    for (var i = 0; i < links.length; i++) {
-        if (links[i].href.substring(0, window.location.origin.length) != window.location.origin) {
-            // link is not local
-            if (! matchInArray(links[i].href, settings.ignoreLinks)) {
-                // link is not on ignore list
-                links[i].onclick = function() {
-                    return robustLink(this.href, cleanNull(this.getAttribute("data-versiondate")), cleanNull(this.getAttribute("data-versionurl")))
+    // tests if this script is running inside a web archive:
+    var inArchive = function() {
+        return (function(str) {
+            var hash = 0,
+                strlen = str.length,
+                i,
+                c;
+            if ( strlen === 0 ) {
+                return hash;
+            }
+            for ( i = 0; i < strlen; i++ ) {
+                c = str.charCodeAt( i );
+                hash = ((hash << 5) - hash) + c;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return hash;
+        }('http://digitopia.nl')) != 1834440280; // string will be rewritten inside an archive
+    }
+
+    // will run only if not in context of web archive:
+    if (!inArchive()) {
+        // attach robustLink call to all external links:
+        var links = document.getElementsByTagName("a");
+        for (var i = 0; i < links.length; i++) {
+            if (links[i].href.substring(0, window.location.origin.length) != window.location.origin) {
+                // link is not local
+                if (!matchInArray(links[i].href, settings.ignoreLinks)) {
+                    // link is not on ignore list
+                    links[i].onclick = function () {
+                        return robustLink(this.href, cleanNull(this.getAttribute("data-versiondate")), cleanNull(this.getAttribute("data-versionurl")))
+                    }
                 }
             }
         }
