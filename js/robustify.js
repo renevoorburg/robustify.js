@@ -7,7 +7,7 @@
 * Should work on any modern browser or IE 8 or better. 
 *  
 * @author René Voorburg <rene@digitopia.nl>
-* @version 1.2
+* @version 1.3
 * @copyright René Voorburg 2015
 * @package robustify.js
 *
@@ -78,16 +78,56 @@ Robustify = function(preferences) {
 
     // settings, is used as a 'global' in the scope of Robustify:
     var settings = (function(preferences) {
+
         var settings = { 
-            "dfltVersiondate": "2014-01-01",
+            "dfltVersiondate": false, // to be overwritten later
             "archive"        : "http://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
             "statusservice"  : "http://digitopia.nl/services/statuscode.php?soft404detect&url={url}",
             "precedence"     : "ask"    // "ask" || "live" || "archived" 
         }
 
+        // returns the page's schema.org dateModified or else datePublished
+        var pageModifiedDate = (function () {
+            var ret = false;
+            var meta = document.getElementsByTagName('meta');
+            for (var i = 0; i < meta.length; i++) {
+                itemprop = meta[i].getAttribute('itemprop');
+                content  = meta[i].getAttribute('content');
+                if (itemprop && content) {
+                    if (itemprop == 'datePublished' && ret === false) {
+                        ret = content;
+                    }
+                    if (itemprop == 'dateModified') {
+                        ret = content;
+                    }
+                }
+            }
+            return ret;
+        })();
+
         // override defaults to supplied preferences:
-        settings.dfltVersiondate = preferences.dfltVersiondate ? preferences.dfltVersiondate : settings.dfltVersiondate;
-        settings.archive = preferences.achive ? preferences.archive : settings.archive;
+        if (preferences.dfltVersiondate) {
+            settings.dfltVersiondate = preferences.dfltVersiondate;
+        }
+        if (pageModifiedDate) {
+            settings.dfltVersiondate = pageModifiedDate;
+        }
+        if (!settings.dfltVersiondate ){
+            settings.dfltVersiondate = (function() {
+                var today = new Date();
+                var dd = today.getDate();
+                var mm = today.getMonth()+1;
+                var yyyy = today.getFullYear();
+                if (dd < 10) {
+                    dd = '0'+dd
+                }
+                if (mm < 10) {
+                    mm = '0'+mm
+                }
+                return yyyy + '-' + mm + '-' + dd;
+            })();
+        }
+        settings.archive = preferences.archive ? preferences.archive : settings.archive;
         settings.statusservice = preferences.statusservice ? preferences.statusservice : settings.statusservice;
         settings.precedence = preferences.precedence ? preferences.precedence : settings.precedence;
         settings.ignoreLinks = preferences.ignoreLinks;
@@ -202,7 +242,8 @@ Robustify = function(preferences) {
 
     // tests if this script is running inside a web archive:
     var inArchive = function() {
-        return (function(str) {
+        return ((function(str) {
+            // see http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
             var hash = 0,
                 strlen = str.length,
                 i,
@@ -216,7 +257,7 @@ Robustify = function(preferences) {
                 hash = hash & hash; // Convert to 32bit integer
             }
             return hash;
-        }('http://digitopia.nl')) != 1834440280; // string will be rewritten inside an archive
+        })('http://digitopia.nl')) != 1834440280; // string will be rewritten inside an archive
     }
 
     // will run only if not in context of web archive:
