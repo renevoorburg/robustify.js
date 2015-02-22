@@ -20,25 +20,23 @@
 
 
 <p>
-    <span class="code">robustify.js</span> (<a href="https://github.com/renevoorburg/robustify.js">https://github.com/renevoorburg/robustify.js</a>) is a javascript add-on for web pages to fight <a href="https://en.wikipedia.org/wiki/Link_rot">link rot</a> or content drift. It is an implementation of Herbert Van de Sompel's <a href="http://robustlinks.mementoweb.org/spec/">Memento Robust Links - Link Decoration</a> specification (based in the <a href="http://hiberlink.org">Hiberlink project</a>).</p>
-
-<p>With <span class="code">robustify.js</span> active on a page, any clicked hyperlink will first test if the linked page is available online. If the page is not online, <span class="code">robustify.js</span> will redirect the user to a web archive, by default using the <a href="http://timetravel.mementoweb.org/">Memento Time Travel service</a>. Because of the security model of Javascript, <span class="code">robustify.js</span> needs a server side helper script to be able to see if a page is available. This script <span class="code">statuscode.php</span> detects '404 file not found'-errors but it can also detect so called soft-404 errors (error pages that do not supply the proper 404 status code). This is done by using a technique known as fuzzy hashing.
+    <span class="code">robustify.js</span> (<a href="https://github.com/renevoorburg/robustify.js">https://github.com/renevoorburg/robustify.js</a>) is a javascript add-on for web pages to fight <a href="https://en.wikipedia.org/wiki/Link_rot">link rot</a> or content drift. It is an implementation of Herbert Van de Sompel's <a href="http://robustlinks.mementoweb.org/spec/">Memento Robust Links - Link Decoration</a> specification (based in the <a href="http://hiberlink.org">Hiberlink project</a>). With <span class="code">robustify.js</span> active on a page, any clicked hyperlink will test if the linked page is available online. If the page is not online, <span class="code">robustify.js</span> will redirect the user to a version in a web archive, by default using the <a href="http://timetravel.mementoweb.org/">Memento Time Travel service</a>.</p>
+<p>
+    Because of the security model of Javascript, <span class="code">robustify.js</span> needs a server side helper script to be able to see if a page is available. This script, <span class="code">statuscode.php</span>, detects '404 file not found'-errors but it can also detect so called soft-404 errors (error pages that do not supply the proper 404 status code). This is done by using a technique known as fuzzy hashing.
 </p>
 
 <h2>Basic implementation</h2>
-<p>The easiest way to use <span class="code">robustify.js</span> is by simply putting this code at the bottom of your pages, preferable just before the <span class="code">&lt;/body&gt;</span>-tag.</p>
+<p>The easiest way to use <span class="code">robustify.js</span> is by simply putting this code at the bottom of your pages, preferably just before the <span class="code">&lt;/body&gt;</span>-tag.</p>
 
 <pre>
 &lt;script src=&quot;http://digitopia.nl/js/robustify-min.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-Robustify({});
+robustify({});
 &lt;/script&gt;
 </pre>
 
-<p><span class="code">robustify.js</span> will not modify links local to the website on which the script has been implemented. Use a customized implementation to  exclude other links too.</p>
 
-
-<h2>What it does</h2>
+<h2>Live examples</h2>
 <p>Here are some examples of how <span class="code">robustify.js</span> changes the behaviour of anchor links. <br>
 <span class="code">robustify.js</span> will always present an alert before redirecting the user to a page other than specified in the original <span class="code">href</span>-part of the anchor link.</p>
 
@@ -58,18 +56,21 @@ In this example the date of the desired archived version has been specified expl
 
 <h3>The data-versionurl attribute</h3>
 
-<p><span class="code"><a href="http://www.nu.nl/" data-versionurl="https://web.archive.org/web/20000302032544/http://www.nu.nl/" class="example">&lt;a href=&quot;http://www.nu.nl/&quot; data-versionurl=&quot;https://web.archive.org/web/20000302032544/http://www.nu.nl/&quot;&gt;http://www.nu.nl/&lt;/a&gt;</a></span><br>
-For this page that is available online, a version from a webarchive has been defined using the <span class="code">data-versionurl</span> attribute. The user will now have the choice whether to visit the live of archived version. This behaviour can be overridden, making either the live or the archived version the preferred page.</p>
+<p><span class="code"><a href="http://www.heimatverein-butzweiler.de/index.php?option=com_content&view=article&id=59&Itemid=79&lang=de" data-versionurl="http://web.archive.org/web/20090811002411/http://www.heimatverein-butzweiler.de/index.php?option=com_content&view=article&id=59&Itemid=79&lang=de" class="example">&lt;a href=&quot;http://www.heimatverein-butzweiler.de/index.php?option=com_content&amp;view=article&amp;id=59&amp;Itemid=79&amp;lang=de&quot; data-versionurl=&quot;http://web.archive.org/web/20090811002411/http://www.heimatverein-butzweiler.de/index.php?option=com_content&amp;view=article&amp;id=59&amp;Itemid=79&amp;lang=de&quot;&gt;R&#246;mische Langmauer&lt;/a&gt;</a></a></span><br>
+For this page that is not available online, a version from a webarchive has been defined using the <span class="code">data-versionurl</span> attribute. If the link has been decorated with both a <span class="code">data-versionurl</span> and a <span class="code">data-versiondate</span> the former takes precedence. </p>
+
+<h3>Local links</h3>
+
+<p><span class="code">robustify.js</span> will not modify links local to the website on which the script has been implemented. Further, additional measures have been taken to prevent it from running inside the context of a web archive.</p>
 
 <h2>Customized implementation</h2>
 <p>Per default, <span class="code">robustify.js</span> calls <span class="code"><a href="http://digitopia.nl/services/statuscode.php">http://digitopia.nl/services/statuscode.php</a></span> to obtain JSON formatted header information regarding the url of the clicked link. Of course, this can be customized, as most behaviour of the script. Here is an example of a customized call:</p>
 <pre>
 &lt;script src=&quot;http://digitopia.nl/js/robustify-min.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-Robustify({ &quot;archive&quot;        : &quot;https://web.archive.org/web/{yyyymmddhhmmss}/{url}&quot;,
+robustify({ &quot;archive&quot;        : &quot;https://web.archive.org/web/{yyyymmddhhmmss}/{url}&quot;,
             &quot;dfltVersiondate&quot;: &quot;2010-01-01&quot;, 
             &quot;statusservice&quot;  : &quot;http://digitopia.nl/services/statuscode.php?url={url}&quot;,
-            &quot;precedence&quot;     : &quot;live&quot;, 
             &quot;ignoreLinks&quot;    : [    &quot;^http.?://[a-z]{2}\.wikipedia\.org&quot;, 
                                     &quot;^http.?://(www\.)?wikidata\.org&quot; 
                                ]
@@ -90,9 +91,6 @@ Here is how this call has been customized:
 <dt>"statusservice"</dt>
 <dd>Defines how the statuscode service is called. In this example, soft-404 detection is disabled. To enable it, add the parameter <span class="code">"soft404detect"</span> as in <span class="code">"http://digitopia.nl/services/statuscode.php?soft404detect&url={url}"</span>. Of course, you can run this service on your own server. Mind that to be able to do soft-404 detection, the <span class="code">statuscode.php</span> script requires PHP to have the <a href="http://pecl.php.net/package/ssdeep">ssdeep extension</a> loaded. </dd>
 
-<dt>"precedence"</dt>
-<dd>Possible values are <span class="code">"live"</span>, <span class="code">"archived"</span> and <span class="code">"ask"</span>. The latter, the default value, will present the user with a dialog when the given link is available and has a <span class="code">data-versionurl</span> attribute specified. Otherwise, either the <span class="code">"live"</span> or <span class="code">"archived"</span> page will take precedence.</dd>
-
 <dt>"ignoreLinks"</dt>
 <dd><span class="code">robustify.js</span> will not alter the behaviour of local links, regardless whether they are defined relative or absolute. To make the script ignore more links, patterns may be defined here.</dd>
 </dl>
@@ -109,9 +107,10 @@ Here is how this call has been customized:
 
 <p><em>René Voorburg, updated February 2015</em></p>
 
+
 <script src="http://digitopia.nl/js/robustify.js"></script>
 <script>
-Robustify({});
+robustify({});
 </script>
 
 </body>

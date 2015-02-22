@@ -1,39 +1,37 @@
-/** 
-* robustify.js
-* Fights linkrot by redirecting links to unavailable webpages to archived versions.
-* An implementation based on the Memento Robust Links specification.
-* See http://robustlinks.mementoweb.org/spec/
-*
-* Should work on any modern browser or IE 8 or better. 
-*  
-* @author René Voorburg <rene@digitopia.nl>
-* @version 1.3
-* @copyright René Voorburg 2015
-* @package robustify.js
-*
-* Permission is hereby granted, free of charge, to any person
-* obtaining a copy of this software and associated documentation
-* files (the "Software"), to deal in the Software without
-* restriction, including without limitation the rights to use,
-* copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the
-* Software is furnished to do so, subject to the following
-* conditions:
-* 
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-* OTHER DEALINGS IN THE SOFTWARE.
-*  
-*/
-
+//
+// robustify.js
+// Fights linkrot by redirecting links to unavailable webpages to archived versions.
+// An implementation based on the Memento Robust Links specification.
+// See http://robustlinks.mementoweb.org/spec/
+//
+// Should work on any modern browser or IE 8 or better.
+//
+// @author René Voorburg <rene@digitopia.nl>
+// @version 1.4
+// @copyright René Voorburg 2015
+// @package robustify.js
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+//
 
 // prototype for indexOf to support IE8
 // from http://stackoverflow.com/questions/5864408/javascript-is-in-array
@@ -74,7 +72,7 @@ if (!Array.prototype.indexOf) {
 }
 
 
-Robustify = function(preferences) {
+var robustify = function (preferences) {
 
     // settings, is used as a 'global' in the scope of Robustify:
     var settings = (function(preferences) {
@@ -82,8 +80,7 @@ Robustify = function(preferences) {
         var settings = { 
             "dfltVersiondate": false, // to be overwritten later
             "archive"        : "http://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
-            "statusservice"  : "http://digitopia.nl/services/statuscode.php?soft404detect&url={url}",
-            "precedence"     : "ask"    // "ask" || "live" || "archived" 
+            "statusservice"  : "http://digitopia.nl/services/statuscode.php?soft404detect&url={url}"
         }
 
         // returns the page's schema.org dateModified or else datePublished
@@ -140,15 +137,11 @@ Robustify = function(preferences) {
         var langStrTable = {
             "en": { 
                 "offlineToVersionurl" : "Redirected link\n\nThe requested page {url} is not available.\nYou are being redirected to an archived copy.", 
-                "offlineToVersiondate": "Redirected link\n\nThe requested page {url} is not available.\nYour are being redirected to a web archive that might have a version of this page.",
-                "onlineAsk"           : "An archived version has been specified. Confirm to visit the live page {url}, cancel to visit the archived page.",
-                "onlineToVersionurl"  : "Redirected link\n\nYou are being redirected to an archived version of {url}."
+                "offlineToVersiondate": "Redirected link\n\nThe requested page {url} is not available.\nYour are being redirected to a web archive that might have a version of this page."
             },
             "nl": {
                 "offlineToVersionurl" : "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een gearchiveerde versie.",
-                "offlineToVersiondate": "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een webarchief dat mogelijk een versie heeft.",
-                "onlineAsk"           : "Een gearchiveerde versie is gespecificeerd. Bevestig om de live pagina {url} te bezoeken, annuleer voor de archiefversie.",
-                "onlineToVersionurl"  : "Aangepaste verwijzing\n\nU wordt doorgestuurd naar een gearchiveerde versie van {url}."
+                "offlineToVersiondate": "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een webarchief dat mogelijk een versie heeft."
             }
         } 
         var languages = [];
@@ -171,25 +164,7 @@ Robustify = function(preferences) {
         }
     
         if (response.headers[response.headers.length - 1].statuscode == 200) {
-            // href is available online
-            if (versionurl) {
-                if (settings.precedence == 'archived') {
-                    alert(langStrArr["onlineToVersionurl"].replace('{url}', response.request));
-                    window.location.href = versionurl;
-                }
-                if (settings.precedence == 'live') {
-                    window.location.href = response.request;
-                }
-                if (settings.precedence == 'ask') {
-                    if (confirm(langStrArr["onlineAsk"].replace('{url}', response.request))) {
-                        window.location.href = response.request;
-                    } else {
-                        window.location.href = versionurl;
-                    }
-                }
-            } else {
-                window.location.href = response.request;
-            }
+            window.location.href = response.request;
         } else {
             // href is not available online, link to archive
             if (versionurl) {
@@ -277,3 +252,5 @@ Robustify = function(preferences) {
         }
     }
 }
+
+var Robustify = robustify;
