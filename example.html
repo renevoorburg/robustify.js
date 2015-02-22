@@ -85,7 +85,7 @@ Here is how this call has been customized:
 <dd>When a link returns a 404, <span class="code">robustify.js</span> will redirect the user to a web archive. In determining where to send the user, the <span class="code">data-versionurl</span> takes precedence above other options. If no <span class="code">data-versionurl</span> has been given, the user will be redirected to the archive known by <span class="code">robustify.js</span>. Default this is <a href="http://timetravel.mementoweb.org/">timetravel.mementoweb.org</a>  (actually an aggregator, not an archive). Using the <span class="code">"archive"</span> option you may specify an url pattern for an other web archive.</dd>
 
 <dt>"dfltVersiondate"</dt>
-<dd>When a link is not available and no <span class="code">data-versionurl</span> has been specified, the user will be redirected to the web archive known by <span class="code">robustify.js</span>. When given, the value of the <span class="code">data-versiondate</span> attribute of the link will be used as the preferred date for the version in the archive. When that <span class="code">data-versiondate</span> is not available the value of <span class="code">"dfltVersiondate"</span> will be used.</dd>
+<dd>When a link is not available and no <span class="code">data-versionurl</span> has been specified, the user will be redirected to the web archive known by <span class="code">robustify.js</span>. When supplied, the value of the <span class="code">data-versiondate</span> attribute of the link will be used as the preferred date for the version in the archive. When the link has not been decorated with a <span class="code">data-versiondate</span>, the <span class="code">dateModified</span>, or in absence of that the <span class="code">datePublished</span>, of the page will be used (following the <a href="http://schema.org/">schema.org</a> serialization, for example <span class="code">&lt;meta itemprop=&quot;dateModified&quot; content=&quot;2014-12-19&quot;&gt;</span>). Otherwise the value of <span class="code">"dfltVersiondate"</span> will be used. If no <span class="code">versiondate</span> whatsoever is available, the current date will be used.</dd>
 
 <dt>"statusservice"</dt>
 <dd>Defines how the statuscode service is called. In this example, soft-404 detection is disabled. To enable it, add the parameter <span class="code">"soft404detect"</span> as in <span class="code">"http://digitopia.nl/services/statuscode.php?soft404detect&url={url}"</span>. Of course, you can run this service on your own server. Mind that to be able to do soft-404 detection, the <span class="code">statuscode.php</span> script requires PHP to have the <a href="http://pecl.php.net/package/ssdeep">ssdeep extension</a> loaded. </dd>
@@ -103,6 +103,9 @@ Here is how this call has been customized:
 <p>
 <span class="code">robustify.js</span> has been designed to present alerts and dialogs using the preferred language of the browser. Currently, English and Dutch strings have been supplied. Feel free to add more support for more languages by modifying the code (<a href="https://github.com/renevoorburg/robustify.js">https://github.com/renevoorburg/robustify.js</a>).
 </p>
+
+<h2>In use</h2>
+<p>A real world implementation of <span class="code">robustify.js</span> can be seen at <a href="http://vici.org">Vici.org, Archaeological Atlas of Antiquity</a>.</p>
 
 <p><em>René Voorburg, updated February 2015</em></p>
 
