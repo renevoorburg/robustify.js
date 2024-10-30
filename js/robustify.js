@@ -2,13 +2,11 @@
 // robustify.js
 // Fights linkrot by redirecting links to unavailable webpages to archived versions.
 // An implementation based on the Memento Robust Links specification.
-// See http://robustlinks.mementoweb.org/spec/
-//
-// Should work on any modern browser or IE 8 or better.
-//
+// See https://robustlinks.mementoweb.org/spec/
+////
 // @author René Voorburg <rene@digitopia.nl>
-// @version 1.4
-// @copyright René Voorburg 2015
+// @version 1.5
+// @copyright René Voorburg 202024
 // @package robustify.js
 //
 // Permission is hereby granted, free of charge, to any person
@@ -33,192 +31,84 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// prototype for indexOf to support IE8
-// from http://stackoverflow.com/questions/5864408/javascript-is-in-array
-if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(searchElement /*, fromIndex */) {
-        "use strict";
+const robustify = ({ dfltVersiondate, archive, statusservice, precedence, ignoreLinks }) => {
 
-        if (this === void 0 || this === null)
-            throw new TypeError();
+    const settings = {
+        dfltVersiondate: dfltVersiondate || getPageModifiedDate() || getTodayDate(),
+        archive: archive || "https://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
+        statusservice: statusservice || "https://digitopia.nl/services/statuscode.php?soft404detect&url={url}",
+        precedence,
+        ignoreLinks
+    };
 
-        var t = Object(this);
-        var len = t.length >>> 0;
-        if (len === 0)
-            return -1;
+    const langStrArr = getTranslations();
 
-        var n = 0;
-        if (arguments.length > 0) {
-            n = Number(arguments[1]);
-            if (n !== n) // shortcut for verifying if it's NaN
-                n = 0;
-            else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0))
-                n = (n > 0 || -1) * Math.floor(Math.abs(n));
-        }
-
-        if (n >= len)
-          return -1;
-
-        var k = n >= 0
-            ? n
-            : Math.max(len - Math.abs(n), 0);
-
-        for (; k < len; k++) {
-            if (k in t && t[k] === searchElement)
-                return k;
-        }
-        return -1;
-    }
-}
-
-
-var robustify = function (preferences) {
-
-    // settings, is used as a 'global' in the scope of Robustify:
-    var settings = (function(preferences) {
-
-        var settings = { 
-            "dfltVersiondate": false, // to be overwritten later
-            "archive"        : "http://timetravel.mementoweb.org/memento/{yyyymmddhhmmss}/{url}",
-            "statusservice"  : "http://digitopia.nl/services/statuscode.php?soft404detect&url={url}"
-        }
-
-        // returns the page's schema.org dateModified or else datePublished
-        var pageModifiedDate = (function () {
-            var ret = false;
-            var meta = document.getElementsByTagName('meta');
-            for (var i = 0; i < meta.length; i++) {
-                itemprop = meta[i].getAttribute('itemprop');
-                content  = meta[i].getAttribute('content');
-                if (itemprop && content) {
-                    if (itemprop == 'datePublished' && ret === false) {
-                        ret = content;
-                    }
-                    if (itemprop == 'dateModified') {
-                        ret = content;
-                    }
-                }
-            }
-            return ret;
-        })();
-
-        // override defaults to supplied preferences:
-        if (preferences.dfltVersiondate) {
-            settings.dfltVersiondate = preferences.dfltVersiondate;
-        }
-        if (pageModifiedDate) {
-            settings.dfltVersiondate = pageModifiedDate;
-        }
-        if (!settings.dfltVersiondate ){
-            settings.dfltVersiondate = (function() {
-                var today = new Date();
-                var dd = today.getDate();
-                var mm = today.getMonth()+1;
-                var yyyy = today.getFullYear();
-                if (dd < 10) {
-                    dd = '0'+dd
-                }
-                if (mm < 10) {
-                    mm = '0'+mm
-                }
-                return yyyy + '-' + mm + '-' + dd;
-            })();
-        }
-        settings.archive = preferences.archive ? preferences.archive : settings.archive;
-        settings.statusservice = preferences.statusservice ? preferences.statusservice : settings.statusservice;
-        settings.precedence = preferences.precedence ? preferences.precedence : settings.precedence;
-        settings.ignoreLinks = preferences.ignoreLinks;
-        return settings;
-    })(preferences);
-    
-    // internationalization, langStrArr is used as a 'global' in the scope of Robustify:
-    var langStrArr = (function() {
-        // add missing languages as desired...:
-        var langStrTable = {
-            "en": { 
-                "offlineToVersionurl" : "Redirected link\n\nThe requested page {url} is not available.\nYou are being redirected to an archived copy.", 
-                "offlineToVersiondate": "Redirected link\n\nThe requested page {url} is not available.\nYour are being redirected to a web archive that might have a version of this page."
+    function getTranslations() {
+        const langStrTable = {
+            "en": {
+                "offlineToVersionurl": "Redirected link\n\nThe requested page {url} is not available.\nYou are being redirected to an archived copy.",
+                "offlineToVersiondate": "Redirected link\n\nThe requested page {url} is not available.\nYou are being redirected to a web archive that might have a version of this page."
             },
             "nl": {
-                "offlineToVersionurl" : "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een gearchiveerde versie.",
+                "offlineToVersionurl": "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een gearchiveerde versie.",
                 "offlineToVersiondate": "Aangepaste verwijzing\n\nDe gevraagde pagina {url} is niet beschikbaar.\nU wordt doorgestuurd naar een webarchief dat mogelijk een versie heeft."
             }
-        } 
-        var languages = [];
-        for (var key in langStrTable) {
-            languages.push(key);
-        }
-        var browserLang = (navigator.language || navigator.userLanguage).substring(0, 2);
-        var lang = languages.indexOf(browserLang)== -1 ? 'en' : browserLang;
-        return langStrTable[lang]; 
-    })();
+        };
+        const browserLang = (navigator.language || navigator.userLanguage).substring(0, 2);
+        return langStrTable[browserLang] || langStrTable["en"];
+    }
 
+    function getPageModifiedDate() {
+        const meta = document.querySelectorAll('meta[itemprop="datePublished"], meta[itemprop="dateModified"]');
+        return meta.length ? meta[meta.length - 1].getAttribute('content') : null;
+    }
 
-    // navigate to appropriate page, alert user, ask for input if required:
-    var presentLink = function (response, versiondate, versionurl) {
-    
-        // returns a resource link as used in web archive:
-        function buildArchiveLink(versiondate, url) {            
-            var versiondate = versiondate ? versiondate : settings.dfltVersiondate;
-            return settings.archive.replace('{url}', url).replace('{yyyymmddhhmmss}', versiondate.replace(/[^0-9]/g, ''));
+    function getTodayDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function buildArchiveLink(versiondate, url) {
+        const date = versiondate ? versiondate : settings.dfltVersiondate;
+        return settings.archive.replace('{url}', url).replace('{yyyymmddhhmmss}', date.replace(/[^0-9]/g, ''));
+    }
+
+    async function testLink(link, versiondate, versionurl) {
+        try {
+            const firstVersionUrl = versionurl ? versionurl.split(' ')[0] : null;
+            const response = await fetch(settings.statusservice.replace('{url}', encodeURIComponent(link)));
+            const result = await response.json();
+            presentLink(result, versiondate, firstVersionUrl);
+        } catch (error) {
+            console.error("Network request failed", error);
         }
-    
-        if (response.headers[response.headers.length - 1].statuscode == 200) {
+    }
+
+    function presentLink(response, versiondate, versionurl) {
+        if (response.headers[response.headers.length - 1].statuscode === 200) {
             window.location.href = response.request;
         } else {
-            // href is not available online, link to archive
-            if (versionurl) {
-                alert(langStrArr["offlineToVersionurl"].replace('{url}', response.request));
-                window.location.href= versionurl;
-            } else {
-                 alert(langStrArr["offlineToVersiondate"].replace('{url}', response.request));
-                window.location.href= buildArchiveLink(versiondate, response.request);
-            }
+            const message = versionurl
+                ? langStrArr["offlineToVersionurl"].replace('{url}', response.request)
+                : langStrArr["offlineToVersiondate"].replace('{url}', response.request);
+            alert(message);
+            window.location.href = versionurl || buildArchiveLink(versiondate, response.request);
         }
-    }
-    
-    // tests if given link is available by calling a JSON service
-    // resulting object is presented to callback :
-    var testLink = function (link, versiondate, versionurl, callback) {
-        var http = new XMLHttpRequest();
-        http.open('GET', settings.statusservice.replace('{url}', encodeURIComponent(link)), true);
-        http.onreadystatechange = function() {
-            if (this.readyState == this.DONE) {
-                callback(JSON.parse(this.responseText), versiondate, versionurl);
-            }
-        }
-        http.send();
-    }
-    
-    // onclick handler attached to be attached to all links:
-    var robustLink = function (link, versiondate, versionurl) {
-        testLink(link, versiondate, versionurl, presentLink);
-        return false;
     }
 
-    // prevents sending a string value iso null:
-    var cleanNull = function(str) {
-        if (str=='null' || str=='') return null;
-        return str;
-    }
-    
-    // checks if a string matches a string value in an array
-    var matchInArray = function(str, exprStrArr) {
-        if (exprStrArr) {
-            var len = exprStrArr.length;
-            for (var i = 0; i < len; i++) {
-                if (str.match(new RegExp(exprStrArr[i]))) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    function cleanNull(str) {
+        return str === 'null' || str === '' ? null : str;
     }
 
-    // tests if this script is running inside a web archive:
-    var inArchive = function() {
+    function matchInArray(str, exprStrArr) {
+        return exprStrArr ? exprStrArr.some(expr => str.match(new RegExp(expr))) : false;
+    }
+
+    function inArchive() {
         return ((function(str) {
-            // see http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
             var hash = 0,
                 strlen = str.length,
                 i,
@@ -232,25 +122,21 @@ var robustify = function (preferences) {
                 hash = hash & hash; // Convert to 32bit integer
             }
             return hash;
-        })('http://digitopia.nl')) != 1834440280; // string will be rewritten inside an archive
+        })('http://digitopia.nl')) !== 1834440280; // this string will be rewritten inside a webarchive
     }
 
-    // will run only if not in context of web archive:
     if (!inArchive()) {
-        // attach robustLink call to all external links:
-        var links = document.getElementsByTagName("a");
-        for (var i = 0; i < links.length; i++) {
-            if (links[i].href.substring(0, window.location.origin.length) != window.location.origin) {
-                // link is not local
-                if (!matchInArray(links[i].href, settings.ignoreLinks)) {
-                    // link is not on ignore list
-                    links[i].onclick = function () {
-                        return robustLink(this.href, cleanNull(this.getAttribute("data-versiondate")), cleanNull(this.getAttribute("data-versionurl")))
-                    }
-                }
+        const links = document.querySelectorAll("a");
+        links.forEach(link => {
+            if (link.href.startsWith(window.location.origin) === false && !matchInArray(link.href, settings.ignoreLinks)) {
+                link.onclick = () => {
+                    testLink(link.href, cleanNull(link.getAttribute("data-versiondate")), cleanNull(link.getAttribute("data-versionurl")));
+                    return false;
+                };
             }
-        }
+        });
     }
-}
+};
 
-var Robustify = robustify;
+const Robustify = robustify;
+
