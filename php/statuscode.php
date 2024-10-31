@@ -121,7 +121,11 @@ function get_contents_curl($url) {
  * @return int statuscode
  */
 function get_statuscode_header($headerArr) {
-    return (int)substr($headerArr[0], 9, 3);
+    if (!isset($headerArr[0])) {
+        return 0;
+    }
+    $parts = explode(' ', trim($headerArr[0]));
+    return isset($parts[1]) ? (int)$parts[1] : 0;
 }
 
 /**
